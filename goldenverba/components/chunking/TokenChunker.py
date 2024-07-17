@@ -12,6 +12,7 @@ from goldenverba.components.document import Document
 
 from goldenverba.server.types import FileConfig
 from goldenverba.server.ImportLogger import LoggerManager
+from goldenverba.components.types import InputConfig
 
 
 class TokenChunker(Chunker):
@@ -25,11 +26,21 @@ class TokenChunker(Chunker):
         self.requires_library = ["tiktoken"]
         self.description = "Splits documents based on word tokens"
         self.encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        self.config = {
+            "Tokens": InputConfig(
+                type="number", value=250, description="Choose how many Token per chunks", values=[]
+            ),
+            "Overlap": InputConfig(
+                type="number",
+                value=50,
+                description="Choose how many Tokens should overlap between chunks", values=[]
+            ),
+        }
 
     async def chunk(self, config: dict, document: Document) -> Document:
 
-        units = int(config["units"].value)
-        overlap = int(config["overlap"].value)
+        units = int(config["Tokens"].value)
+        overlap = int(config["Overlap"].value)
 
         # Skip if document already contains chunks
         if len(document.chunks) > 0:
