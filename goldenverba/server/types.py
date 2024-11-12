@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class Credentials(BaseModel):
-    deployment: Literal["Weaviate", "Docker", "Local", "Custom"]
+    deployment: Literal["Weaviate", "Docker", "Local", "Custom"] = "Weaviate"
     url: str
     key: str
 
@@ -34,8 +34,8 @@ class GetVectorPayload(BaseModel):
 
 
 class ConnectPayload(BaseModel):
-    credentials: Credentials
-    port: str
+    email: str
+    password: str
 
 
 class DataBatchPayload(BaseModel):
@@ -257,3 +257,9 @@ class GetDocumentPayload(BaseModel):
 class ResetPayload(BaseModel):
     resetMode: str
     credentials: Credentials
+
+class CreateUserPayload(BaseModel):
+    email: str
+    password: str
+    weaviate_url: str
+    weaviate_key: str

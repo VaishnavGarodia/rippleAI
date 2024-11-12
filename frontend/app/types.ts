@@ -20,6 +20,7 @@ export type ConnectPayload = {
   user_config: UserConfig;
   theme: Theme;
   themes: Themes;
+  credentials: Credentials;
 };
 
 export type StatusMessage = {

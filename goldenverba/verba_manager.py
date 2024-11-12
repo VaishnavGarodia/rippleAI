@@ -28,6 +28,7 @@ from goldenverba.components.managers import (
     RetrieverManager,
     GeneratorManager,
     WeaviateManager,
+    DatabaseManager,
 )
 
 load_dotenv()
@@ -43,6 +44,7 @@ class VerbaManager:
         self.retriever_manager = RetrieverManager()
         self.generator_manager = GeneratorManager()
         self.weaviate_manager = WeaviateManager()
+        self.database_manager = DatabaseManager()
         self.rag_config_uuid = "e0adcc12-9bad-4588-8a1e-bab0af6ed485"
         self.theme_config_uuid = "baab38a7-cb51-4108-acd8-6edeca222820"
         self.user_config_uuid = "f53f7738-08be-4d5a-b003-13eb4bf03ac7"

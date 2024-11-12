@@ -8,6 +8,8 @@ from weaviate.collections.classes.data import DataObject
 from weaviate.classes.aggregate import GroupByAggregate
 from weaviate.classes.init import AdditionalConfig, Timeout
 
+import sqlite3
+from passlib.context import CryptContext
 import os
 import asyncio
 import json
@@ -1258,3 +1260,82 @@ class GeneratorManager:
 
         # The list has been built in reverse order so we reverse it again
         return list(reversed(truncated_conversation_dicts))
+
+
+
+class DatabaseManager:
+    """Manages the SQLite database for storing and retrieving user data securely."""
+    
+    DATABASE_PATH = "verba_users.db"
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    def __init__(self):
+        self.initialize_database()
+    
+    def initialize_database(self):
+        """Creates the users table if it doesn't exist."""
+        conn = sqlite3.connect(self.DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                hashed_password TEXT NOT NULL,
+                weaviate_url TEXT NOT NULL,
+                weaviate_key TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+        conn.close()
+        
+    def add_user(self, email: str, password: str, weaviate_url: str, weaviate_key: str) -> tuple[bool, str]:
+        """Registers a new user with hashed password and Weaviate credentials."""
+        try:
+            conn = sqlite3.connect(self.DATABASE_PATH)
+            cursor = conn.cursor()
+            hashed_password = self.pwd_context.hash(password)
+            cursor.execute(
+                "INSERT INTO users (email, hashed_password, weaviate_url, weaviate_key) VALUES (?, ?, ?, ?)",
+                (email, hashed_password, weaviate_url, weaviate_key),
+            )
+            conn.commit()
+            return True, "User created successfully"
+        except sqlite3.IntegrityError:
+            # User already exists
+            return False, "A user with this email already exists"
+        except Exception as e:
+            # General error handling for any other database issues
+            return False, f"Failed to add user: {str(e)}"
+        finally:
+            conn.close()
+
+
+    def get_user(self, email: str) -> dict:
+        """Retrieves user data based on email."""
+        conn = sqlite3.connect(self.DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user_data = cursor.fetchone()
+        conn.close()
+        if user_data:
+            return {
+                "email": user_data[1],
+                "hashed_password": user_data[2],
+                "weaviate_url": user_data[3],
+                "weaviate_key": user_data[4]
+            }
+        return None
+
+    def verify_password(self, stored_password: str, provided_password: str) -> bool:
+        """Verifies a password against the stored hash."""
+        return self.pwd_context.verify(provided_password, stored_password)
+    
+    def authenticate_user(self, email: str, password: str) -> dict:
+        """Authenticates user and returns their Weaviate credentials if successful."""
+        user_data = self.get_user(email)
+        if user_data and self.verify_password(user_data["hashed_password"], password):
+            return {
+                "weaviate_url": user_data["weaviate_url"],
+                "weaviate_key": user_data["weaviate_key"]
+            }
+        return None

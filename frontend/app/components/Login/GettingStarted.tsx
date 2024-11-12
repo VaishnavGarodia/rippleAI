@@ -32,24 +32,17 @@ const GettingStartedComponent: React.FC<GettingStartedComponentProps> = ({
           <div className="hero-content flex-row">
             <div className="text-center lg:text-left">
               <h1 className="text-2xl md:text-5xl font-bold">
-                Welcome to Verba
+                Welcome to Ripple
               </h1>
               <h2 className="text-lg md:text-2xl mt-2">
-                Your Open Source RAG App
+                Ripple
               </h2>
               <p className="py-6 text-sm md:text-base">
-                Verba is an open-source application designed to offer an
-                end-to-end, streamlined, and user-friendly interface for
-                Retrieval-Augmented Generation (RAG) out of the box. In just a
-                few easy steps, explore your datasets and extract insights with
-                ease, either locally with HuggingFace and Ollama or through LLM
-                providers such as Anthrophic, Cohere, and OpenAI.
+                Ripple allows you to search 
               </p>
               <p className="py-6 text-sm md:text-base">
-                Learn more by visiting our GitHub repository, our blog post, or
-                our video on Verba. Verba is currently still in development. If
-                you have any questions or find issues, please reach out to us on
-                GitHub.
+                Learn more by visiting our website, ripple.ai. Schedule a demo to learn more,
+                and please reach out to us if you have any questions.
               </p>
               <div className="flex flex-col md:flex-row gap-2">
                 <VerbaButton
@@ -99,7 +92,7 @@ const GettingStartedComponent: React.FC<GettingStartedComponentProps> = ({
               selected={true}
               onClick={() => {
                 addStatusMessage(
-                  "Achievement unlocked: Welcome to Verba!",
+                  "Achievement unlocked: Welcome to Ripple!",
                   "SUCCESS"
                 );
               }}

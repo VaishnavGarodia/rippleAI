@@ -76,10 +76,8 @@ export const fetchHealth = (): Promise<HealthPayload | null> =>
 
 // Endpoint /api/connect
 export const connectToVerba = async (
-  deployment: string,
-  url: string,
-  apiKey: string,
-  port: string
+  email: string,
+  password: string,
 ): Promise<ConnectPayload | null> => {
   const host = await detectHost();
   const response = await fetch(`${host}/api/connect`, {
@@ -88,12 +86,8 @@ export const connectToVerba = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      credentials: {
-        deployment: deployment,
-        url: url,
-        key: apiKey,
-      },
-      port: port,
+        email: email,
+        password: password,
     }),
   });
   const data = await response.json();

@@ -1,10 +1,13 @@
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import Depends, FastAPI, HTTPException, WebSocket, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from contextlib import asynccontextmanager
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 import asyncio
 
+from fastapi.templating import Jinja2Templates
+from passlib.context import CryptContext
 from goldenverba.server.helpers import LoggerManager, BatchManager
 from weaviate.client import WeaviateAsyncClient
 
@@ -37,6 +40,7 @@ from goldenverba.server.types import (
     GetVectorPayload,
     DataBatchPayload,
     ChunksPayload,
+    CreateUserPayload,
 )
 
 load_dotenv()
@@ -56,17 +60,27 @@ manager = verba_manager.VerbaManager()
 
 client_manager = verba_manager.ClientManager()
 
+### Admin settings
+
+security = HTTPBasic()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = pwd_context.hash(os.getenv("ADMIN_PASSWORD", "password"))
+                                  
 ### Lifespan
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    manager.database_manager.initialize_database()
+    print("Database initialized!")
     yield
     await client_manager.disconnect()
 
 
 # FastAPI App
 app = FastAPI(lifespan=lifespan)
+templates = Jinja2Templates(directory="goldenverba/server/templates")
 
 # Allow requests only from the same origin
 app.add_middleware(
@@ -132,6 +146,30 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "frontend/out"), name="app
 async def serve_frontend():
     return FileResponse(os.path.join(BASE_DIR, "frontend/out/index.html"))
 
+### ADMIN PANEL
+
+def authenticate_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    if credentials.username != ADMIN_USERNAME or not pwd_context.verify(credentials.password, ADMIN_PASSWORD):
+        raise HTTPException(status_code=403, detail="Invalid admin credentials")
+    return True
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_panel(request: Request, authenticated: bool = Depends(authenticate_admin)):
+    """Renders the admin panel for creating new users."""
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+@app.post("/admin/create_user")
+async def create_user(payload: CreateUserPayload, authenticated: bool = Depends(authenticate_admin)):
+    try:
+        user_created, message = manager.database_manager.add_user(
+            payload.email, payload.password, payload.weaviate_url, payload.weaviate_key
+        )
+        if user_created:
+            return JSONResponse(content={"message": message}, status_code=200)
+        else:
+            return JSONResponse(content={"detail": message}, status_code=400)
+    except Exception as e:
+        return JSONResponse(content={"detail": str(e)}, status_code=500)
 
 ### INITIAL ENDPOINTS
 
@@ -159,8 +197,17 @@ async def health_check():
 
 @app.post("/api/connect")
 async def connect_to_verba(payload: ConnectPayload):
+    # TODO: Add the user email and password to credentials field.
     try:
-        client = await client_manager.connect(payload.credentials, payload.port)
+        print(payload)
+        user_data = manager.database_manager.authenticate_user(payload.email, payload.password)
+        if not user_data:
+            return JSONResponse(status_code=403, content={"error": "Invalid credentials"})
+        credentials = Credentials(
+            url=user_data["weaviate_url"], 
+            key=user_data["weaviate_key"]
+        )
+        client = await client_manager.connect(credentials, 8080) # TODO: Remove port
         if isinstance(
             client, WeaviateAsyncClient
         ):  # Check if client is an AsyncClient object
@@ -176,6 +223,7 @@ async def connect_to_verba(payload: ConnectPayload):
                     "user_config": user_config,
                     "theme": theme,
                     "themes": themes,
+                    "credentials": credentials.model_dump(), # TODO: Check if it safe to return credentials to client this way?
                 },
             )
         else:
@@ -195,9 +243,7 @@ async def connect_to_verba(payload: ConnectPayload):
             },
         )
 
-
 ### WEBSOCKETS
-
 
 @app.websocket("/ws/generate_stream")
 async def websocket_generate_stream(websocket: WebSocket):
