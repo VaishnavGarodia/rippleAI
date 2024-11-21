@@ -9,12 +9,12 @@ import { IoSettingsSharp } from "react-icons/io5";
 import { FaGithub } from "react-icons/fa";
 import { TiThMenu } from "react-icons/ti";
 
-import { closeOnClick } from "@/app/util";
+import { closeOnClick, hasPermission } from "@/app/util";
 
 import VerbaButton from "./VerbaButton";
 
 import NavbarButton from "./NavButton";
-import { getGitHubStars } from "./util";
+import { Credentials } from "@/app/types";
 
 interface NavbarProps {
   imageSrc: string;
@@ -23,17 +23,11 @@ interface NavbarProps {
   version: string;
   currentPage: string;
   production: "Local" | "Demo" | "Production";
+  credentials: Credentials;
   setCurrentPage: (
     page: "CHAT" | "DOCUMENTS" | "STATUS" | "ADD" | "SETTINGS" | "RAG"
   ) => void;
 }
-
-const formatGitHubNumber = (num: number): string => {
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-  }
-  return num.toString();
-};
 
 const Navbar: React.FC<NavbarProps> = ({
   imageSrc,
@@ -42,40 +36,9 @@ const Navbar: React.FC<NavbarProps> = ({
   currentPage,
   setCurrentPage,
   production,
+  credentials,
 }) => {
-  const [gitHubStars, setGitHubStars] = useState("0");
   const icon_size = 18;
-
-  useEffect(() => {
-    // Declare an asynchronous function inside the useEffect
-    const fetchGitHubStars = async () => {
-      try {
-        // Await the asynchronous call to getGitHubStars
-        const response: number = await getGitHubStars();
-
-        if (response) {
-          // Now response is the resolved value of the promise
-          const formatedStars = formatGitHubNumber(response);
-          setGitHubStars(formatedStars);
-        }
-      } catch (error) {
-        console.error("Failed to fetch GitHub stars:", error);
-      }
-    };
-
-    // Call the async function
-    fetchGitHubStars();
-  }, []);
-
-  const handleGitHubClick = () => {
-    // Open a new tab with the specified URL
-    window.open(
-      "https://github.com/weaviate/verba",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
   return (
     <div className="flex justify-between items-center mb-10">
       {/* Logo, Title, Subtitle */}
@@ -108,7 +71,8 @@ const Navbar: React.FC<NavbarProps> = ({
                   Chat
                 </a>
               </li>
-              <li key={"Menu Button2"}>
+              {hasPermission(credentials.role, "Documents") && (
+                <li key={"Menu Button2"}>
                 <a
                   className={currentPage === "DOCUMENTS" ? "font-bold" : ""}
                   onClick={() => {
@@ -119,7 +83,8 @@ const Navbar: React.FC<NavbarProps> = ({
                   Documents
                 </a>
               </li>
-              {production != "Demo" && (
+              )}
+              {hasPermission(credentials.role, "ImportData") && (
                 <li key={"Menu Button4"}>
                   <a
                     className={currentPage === "ADD" ? "font-bold" : ""}
@@ -161,7 +126,7 @@ const Navbar: React.FC<NavbarProps> = ({
             setCurrentPage={setCurrentPage}
             setPage="CHAT"
           />
-          {production != "Demo" && (
+          {hasPermission(credentials.role, "ImportData") && (
             <NavbarButton
               hide={false}
               Icon={IoMdAddCircle}
@@ -171,7 +136,8 @@ const Navbar: React.FC<NavbarProps> = ({
               setPage="ADD"
             />
           )}
-          <NavbarButton
+          {hasPermission(credentials.role, "Documents") && (
+            <NavbarButton
             hide={false}
             Icon={IoDocumentSharp}
             title="Documents"
@@ -179,28 +145,17 @@ const Navbar: React.FC<NavbarProps> = ({
             setCurrentPage={setCurrentPage}
             setPage="DOCUMENTS"
           />
-          {production != "Demo" && (
-            <NavbarButton
-              hide={false}
-              Icon={IoSettingsSharp}
-              title="Settings"
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              setPage="SETTINGS"
-            />
           )}
           <div
             className={`sm:h-[3vh] lg:h-[5vh] mx-1 hidden md:block bg-text-alt-verba w-px`}
           ></div>
-          <VerbaButton
-            title={gitHubStars}
-            Icon={FaGithub}
-            onClick={handleGitHubClick}
-            className="hidden md:block"
-            text_size="text-xs"
-            icon_size={18}
-            disabled={false}
-            selected={false}
+          <NavbarButton
+            hide={false}
+            Icon={IoSettingsSharp}
+            title="Settings"
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            setPage="SETTINGS"
           />
         </div>
       </div>

@@ -1282,21 +1282,22 @@ class DatabaseManager:
                 email TEXT UNIQUE NOT NULL,
                 hashed_password TEXT NOT NULL,
                 weaviate_url TEXT NOT NULL,
-                weaviate_key TEXT NOT NULL
+                weaviate_key TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'BasicUser'
             )
         """)
         conn.commit()
         conn.close()
         
-    def add_user(self, email: str, password: str, weaviate_url: str, weaviate_key: str) -> tuple[bool, str]:
+    def add_user(self, email: str, password: str, weaviate_url: str, weaviate_key: str, role:str = "BasicUser") -> tuple[bool, str]:
         """Registers a new user with hashed password and Weaviate credentials."""
         try:
             conn = sqlite3.connect(self.DATABASE_PATH)
             cursor = conn.cursor()
             hashed_password = self.pwd_context.hash(password)
             cursor.execute(
-                "INSERT INTO users (email, hashed_password, weaviate_url, weaviate_key) VALUES (?, ?, ?, ?)",
-                (email, hashed_password, weaviate_url, weaviate_key),
+                "INSERT INTO users (email, hashed_password, weaviate_url, weaviate_key, role) VALUES (?, ?, ?, ?, ?)",
+                (email, hashed_password, weaviate_url, weaviate_key, role),
             )
             conn.commit()
             return True, "User created successfully"
@@ -1322,7 +1323,8 @@ class DatabaseManager:
                 "email": user_data[1],
                 "hashed_password": user_data[2],
                 "weaviate_url": user_data[3],
-                "weaviate_key": user_data[4]
+                "weaviate_key": user_data[4],
+                "role": user_data[5]
             }
         return None
 
@@ -1336,6 +1338,7 @@ class DatabaseManager:
         if user_data and self.verify_password(user_data["hashed_password"], password):
             return {
                 "weaviate_url": user_data["weaviate_url"],
-                "weaviate_key": user_data["weaviate_key"]
+                "weaviate_key": user_data["weaviate_key"],
+                "role": user_data["role"],
             }
         return None

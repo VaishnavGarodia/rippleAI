@@ -7,6 +7,7 @@ class Credentials(BaseModel):
     deployment: Literal["Weaviate", "Docker", "Local", "Custom"] = "Weaviate"
     url: str
     key: str
+    role: str = "BasicUser"
 
 
 class ConversationItem(BaseModel):
@@ -263,3 +264,4 @@ class CreateUserPayload(BaseModel):
     password: str
     weaviate_url: str
     weaviate_key: str
+    role: str

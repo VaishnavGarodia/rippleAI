@@ -26,6 +26,7 @@ import {
 import VerbaButton from "../Navigation/VerbaButton";
 
 import { fetchSelectedDocument } from "@/app/api";
+import { hasPermission } from "@/app/util";
 
 interface DocumentExplorerProps {
   selectedDocument: string | null;
@@ -121,23 +122,24 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
             selected={selectedSetting === "Content"}
             selected_color="bg-secondary-verba"
           />
-
-          <VerbaButton
-            title="Chunks"
-            Icon={MdContentCopy}
-            onClick={() => setSelectedSetting("Chunks")}
-            selected={selectedSetting === "Chunks"}
-            selected_color="bg-secondary-verba"
-          />
-
-          <VerbaButton
-            title="Vector"
-            Icon={TbVectorTriangle}
-            onClick={() => setSelectedSetting("Vector Space")}
-            selected={selectedSetting === "Vector Space"}
-            selected_color="bg-secondary-verba"
-          />
-
+          {(hasPermission(credentials.role, "DocumentVectorDetails") && 
+              <VerbaButton
+              title="Chunks"
+              Icon={MdContentCopy}
+              onClick={() => setSelectedSetting("Chunks")}
+              selected={selectedSetting === "Chunks"}
+              selected_color="bg-secondary-verba"
+            />
+          )}
+          {(hasPermission(credentials.role, "DocumentVectorDetails") && 
+              <VerbaButton
+              title="Vector"
+              Icon={TbVectorTriangle}
+              onClick={() => setSelectedSetting("Vector Space")}
+              selected={selectedSetting === "Vector Space"}
+              selected_color="bg-secondary-verba"
+            />
+          )}
           <VerbaButton
             Icon={MdCancel}
             onClick={() => {
@@ -158,7 +160,7 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
             chunkScores={chunkScores}
           />
         )}
-
+        
         {selectedSetting === "Chunks" && (
           <ChunkView
             selectedTheme={selectedTheme}
@@ -166,7 +168,6 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
             selectedDocument={selectedDocument}
           />
         )}
-
         {selectedSetting === "Vector Space" && (
           <VectorView
             credentials={credentials}
@@ -175,7 +176,6 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
             production={production}
           />
         )}
-
         {selectedSetting === "Metadata" && (
           <DocumentMetaView
             credentials={credentials}

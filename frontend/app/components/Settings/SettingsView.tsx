@@ -17,6 +17,7 @@ import SettingsComponent from "./SettingsComponent";
 import InfoComponent from "../Navigation/InfoComponent";
 import SuggestionView from "./SuggestionView";
 import InfoView from "./InfoView";
+import { hasPermission } from "@/app/util";
 
 interface SettingsViewProps {
   selectedTheme: Theme;
@@ -40,7 +41,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 }) => {
   const [settingMode, setSettingMode] = useState<
     "INFO" | "ADMIN" | "THEME" | "SUGGESTIONS" | "CACHE"
-  >("INFO");
+  >("THEME");
 
   return (
     <div className="flex justify-center gap-3 h-[80vh] ">
@@ -55,13 +56,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
           <div className="bg-bg-alt-verba gap-2 rounded-2xl flex flex-col p-6 w-full overflow-y-auto overflow-x-hidden">
-            <VerbaButton
-              title="Admin"
-              onClick={() => setSettingMode("INFO")}
-              selected={settingMode === "INFO"}
-              selected_color="bg-secondary-verba"
-              Icon={RiAdminFill}
-            />
+            {hasPermission(credentials.role, "SettingsAdmin") && (
+              <VerbaButton
+                title="Admin"
+                onClick={() => setSettingMode("INFO")}
+                selected={settingMode === "INFO"}
+                selected_color="bg-secondary-verba"
+                Icon={RiAdminFill}
+              />
+            )}
             <VerbaButton
               title="Customize Theme"
               onClick={() => setSettingMode("THEME")}
@@ -69,13 +72,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({
               selected_color="bg-secondary-verba"
               Icon={FaPaintBrush}
             />
-            <VerbaButton
+            {hasPermission(credentials.role, "SettingsManageSuggestions") && (
+              <VerbaButton
               title="Manage Suggestions"
               onClick={() => setSettingMode("SUGGESTIONS")}
               selected={settingMode === "SUGGESTIONS"}
               selected_color="bg-secondary-verba"
               Icon={IoChatboxEllipsesSharp}
-            />
+              />
+            )}
           </div>
           <div className="bg-bg-alt-verba gap-2 rounded-2xl flex flex-col p-6 w-full overflow-y-auto overflow-x-hidden">
             <VerbaButton

@@ -413,3 +413,11 @@ You can learn more about Verba's architecture and implementation in its [technic
 
 - **How can I specify the port?**
   - You can use the port and host flag `verba start --port 9000 --host 0.0.0.0`
+
+
+TODOs:
+
+- Improve security on create new users. Only ripple admin should be allowed to do that.
+- Based on the type of data being ingested, choose the appropriate option and settings to import the data (Unstructured, Assemly AI, etc.)
+- Create default settings for the embedder and for the generator.
+- Create admin page for the admin user. Should be able to see metrics on the admin page in settings. All the users, etc (maybe?). Atleast add an admin page for GOD user on /admin where you can see all users and edit their access, delete them, etc.

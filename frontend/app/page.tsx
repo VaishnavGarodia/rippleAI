@@ -59,6 +59,7 @@ export default function Home() {
     deployment: "Local",
     url: "",
     key: "",
+    role: "BasicUser", //TODO: fix this and make sure we update here with what we ahve to
   });
 
   // RAG Config
@@ -81,6 +82,7 @@ export default function Home() {
           deployment: "Local",
           url: health_data.deployments.WEAVIATE_URL_VERBA,
           key: health_data.deployments.WEAVIATE_API_KEY_VERBA,
+          role: "BasicUser", // TODO: Fix this, add the role to health every where in the set
         });
       } else {
         console.warn("Could not retrieve health data");
@@ -217,6 +219,7 @@ export default function Home() {
               version="v2.0.0"
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
+              credentials={credentials}
             />
 
             <div className={`${currentPage === "CHAT" ? "" : "hidden"}`}>
@@ -279,7 +282,7 @@ export default function Home() {
             className={`footer footer-center p-4 mt-8 bg-bg-verba text-text-alt-verba transition-all duration-1500 delay-1000`}
           >
             <aside>
-              <p>Build with ♥ and Weaviate © 2024</p>
+              <p>Ripple AI © 2024</p>
             </aside>
           </div>
         </div>

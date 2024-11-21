@@ -1,5 +1,5 @@
 import { Inter, Plus_Jakarta_Sans, Open_Sans, PT_Mono } from "next/font/google";
-import { RAGConfig } from "./types";
+import { RAGConfig, Role } from "./types";
 
 // Fonts
 const inter = Inter({ subsets: ["latin"] });
@@ -15,6 +15,8 @@ export const fonts: Record<FontKey, typeof inter> = {
   PT_Mono: pt_mono,
 };
 
+
+// TODO: Edit this
 export const chat_interface_info =
   "Use the Chat Interface to interact with your data. Your query will be used to retrieve relevant information and to construct a response. You can choose between different Large Language Models (LLM) to create a response.";
 export const chunk_interface_info =
@@ -61,4 +63,29 @@ export const getImportWebSocketApiHost = () => {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const host = window.location.host;
   return `${protocol}//${host}/ws/import_files`;
+};
+
+type PermissionMap = {
+  [key: string]: Role[];
+};
+
+export const hasPermission = (role: Role, feature: string): boolean => {
+  console.log(role, feature);
+  const permissionMap: PermissionMap = {
+    Chat: ["BasicUser", "BasicUploadUser", "Admin", "RippleAdmin"],
+    ChatConfig: ["RippleAdmin"],
+    SettingsCustomizeCustomer: ["RippleAdmin"],
+    SettingsAdmin: ["RippleAdmin"],
+    SettingsManageSuggestions: ["RippleAdmin"],
+    Documents: ["RippleAdmin", "Admin", "BasicUploadUser"],
+    DocumentVectorDetails: ["RippleAdmin"],
+    ImportData: ["BasicUploadUser", "Admin", "RippleAdmin"],
+    ImportDataConfig: ["RippleAdmin"],
+    ImportDataOverviewIngestionPipeline: ["RippleAdmin"],
+    ManageUsersRippleAdmin: ["RippleAdmin"],
+    ManageUsersAdmin: ["Admin", "RippleAdmin"],
+  };
+
+  const allowedRoles = permissionMap[feature];
+  return allowedRoles?.includes(role) || false;
 };

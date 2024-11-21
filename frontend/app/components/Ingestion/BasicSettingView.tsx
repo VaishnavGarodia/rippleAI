@@ -8,6 +8,7 @@ import {
   statusColorMap,
   RAGComponentConfig,
   RAGConfig,
+  Credentials,
 } from "@/app/types";
 import VerbaButton from "../Navigation/VerbaButton";
 import { MdCancel } from "react-icons/md";
@@ -19,6 +20,7 @@ import ComponentView from "./ComponentView";
 import { MdError } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaCircleInfo } from "react-icons/fa6";
+import { hasPermission } from "@/app/util";
 
 interface BasicSettingViewProps {
   selectedFileData: string | null;
@@ -40,6 +42,7 @@ interface BasicSettingViewProps {
     message: string,
     type: "INFO" | "WARNING" | "SUCCESS" | "ERROR"
   ) => void;
+  credentials: Credentials;
 }
 
 const BasicSettingView: React.FC<BasicSettingViewProps> = ({
@@ -51,6 +54,7 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
   setFileMap,
   blocked,
   addStatusMessage,
+  credentials,
 }) => {
   const [filename, setFilename] = useState("");
   const [source, setSource] = useState("");
@@ -183,7 +187,6 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
       />
     ));
   }
-
   if (selectedFileData) {
     return (
       <div className="flex flex-col justify-start gap-3 rounded-2xl p-1 w-full ">
@@ -191,39 +194,45 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
           <div className="divider  text-text-alt-verba">Import Status</div>
         )}
 
-        <div className="flex flex-col gap-3 text-text-verba">
-          {selectedFileData &&
-            Object.entries(fileMap[selectedFileData].status_report).map(
-              ([status, statusReport]) => (
-                <div className="flex" key={"Status" + status}>
-                  <p className="flex min-w-[8vw] gap-2 items-center text-text-verba">
-                    {statusReport.status === "DONE" && (
-                      <FaCheckCircle size={15} />
-                    )}
-                    {statusReport.status === "ERROR" && <MdError size={15} />}
-                    {statusTextMap[statusReport.status]}
-                  </p>
-                  <label
-                    className={`input flex items-center gap-2 w-full ${statusColorMap[statusReport.status]} bg-bg-verba`}
-                  >
-                    <input
-                      type="text"
-                      className="grow w-full"
-                      value={
-                        statusReport.took != 0
-                          ? statusReport.message +
-                            " (" +
-                            statusReport.took +
-                            "s)"
-                          : statusReport.message
-                      }
-                      disabled={true}
-                    />
-                  </label>
-                </div>
-              )
-            )}
-        </div>
+    <div className="flex flex-col gap-3 text-text-verba">
+      {selectedFileData &&
+        Object.entries(fileMap[selectedFileData].status_report).map(
+          ([status, statusReport]) => {
+            // Check permission only for specific statuses
+            const restrictedStatuses = ["CHUNKING", "EMBEDDING", "INGESTING"];
+            if (
+              restrictedStatuses.includes(status) &&
+              !hasPermission(credentials.role, "ImportDataConfig")
+            ) {
+              return null;
+            }
+            return (
+              <div className="flex" key={"Status" + status}>
+                <p className="flex min-w-[8vw] gap-2 items-center text-text-verba">
+                  {statusReport.status === "DONE" && <FaCheckCircle size={15} />}
+                  {statusReport.status === "ERROR" && <MdError size={15} />}
+                  {statusTextMap[statusReport.status]}
+                </p>
+                <label
+                  className={`input flex items-center gap-2 w-full ${statusColorMap[statusReport.status]} bg-bg-verba`}
+                >
+                  <input
+                    type="text"
+                    className="grow w-full"
+                    value={
+                      statusReport.took !== 0
+                        ? `${statusReport.message} (${statusReport.took}s)`
+                        : statusReport.message
+                    }
+                    disabled={true}
+                  />
+                </label>
+              </div>
+            );
+          }
+        )}
+    </div>
+
 
         <ComponentView
           RAGConfig={fileMap[selectedFileData].rag_config}
@@ -399,89 +408,74 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
           </label>
         </div>
 
-        <div className="divider  text-text-alt-verba">Ingestion Pipeline</div>
+        {hasPermission(credentials.role, "IngestionPipelineConfig") && (
+          <div>
+            <div className="divider  text-text-alt-verba">Ingestion Pipeline</div>
+            {/* Reader */}
+            <div className="flex gap-2 items-center text-text-verba">
+            <p className="flex min-w-[8vw]"></p>
+            <p className="text-sm text-text-alt-verba text-start">
+              {selectedFileData &&
+                fileMap[selectedFileData].rag_config["Reader"].components[
+                  fileMap[selectedFileData].rag_config["Reader"].selected
+                ].description}
+            </p>
+            </div>
+            {/* Chunker */}
+            <div className="flex gap-2 justify-between items-center text-text-verba">
+            <p className="flex min-w-[8vw]">Chunker</p>
+            <label className="input flex items-center gap-2 w-full bg-bg-verba">
+              <input
+                type="text"
+                className="grow w-full"
+                value={fileMap[selectedFileData].rag_config["Chunker"].selected}
+                disabled={true}
+              />
+            </label>
+          </div>
 
-        {/* Reader */}
-        <div className="flex gap-2 justify-between items-center text-text-verba">
-          <p className="flex min-w-[8vw]">Reader</p>
-          <label className="input flex items-center gap-2 w-full bg-bg-verba">
-            <input
-              type="text"
-              className="grow w-full"
-              value={fileMap[selectedFileData].rag_config["Reader"].selected}
-              disabled={true}
+          <div className="flex gap-2 items-center text-text-verba">
+            <p className="flex min-w-[8vw]"></p>
+            <p className="text-sm text-text-alt-verba text-start">
+              {selectedFileData &&
+                fileMap[selectedFileData].rag_config["Chunker"].components[
+                  fileMap[selectedFileData].rag_config["Chunker"].selected
+                ].description}
+            </p>
+          </div>
+          {/* Embedder */}
+          <div className="flex gap-2 justify-between items-center text-text-verba">
+            <p className="flex min-w-[8vw]">Embedder</p>
+            <label className="input flex items-center gap-2 w-full bg-bg-verba">
+              <input
+                type="text"
+                className="grow w-full"
+                value={fileMap[selectedFileData].rag_config["Embedder"].selected}
+                disabled={true}
+              />
+            </label>
+          </div>
+
+          <div className="flex gap-2 items-center text-text-verba">
+            <p className="flex min-w-[8vw]"></p>
+            <p className="text-sm text-text-alt-verba text-start">
+              {selectedFileData &&
+                fileMap[selectedFileData].rag_config["Embedder"].components[
+                  fileMap[selectedFileData].rag_config["Embedder"].selected
+                ].description}
+            </p>
+          </div>
+
+          <div className="divider"></div>
+          <div className="flex gap-2 justify-between items-center text-text-verba">
+            <p className="flex min-w-[8vw]">Debug</p>
+            <VerbaButton
+              Icon={CgDebug}
+              onClick={openDebugModal}
+              className="max-w-min"
             />
-          </label>
-        </div>
-
-        <div className="flex gap-2 items-center text-text-verba">
-          <p className="flex min-w-[8vw]"></p>
-          <p className="text-sm text-text-alt-verba text-start">
-            {selectedFileData &&
-              fileMap[selectedFileData].rag_config["Reader"].components[
-                fileMap[selectedFileData].rag_config["Reader"].selected
-              ].description}
-          </p>
-        </div>
-
-        {/* Chunker */}
-        <div className="flex gap-2 justify-between items-center text-text-verba">
-          <p className="flex min-w-[8vw]">Chunker</p>
-          <label className="input flex items-center gap-2 w-full bg-bg-verba">
-            <input
-              type="text"
-              className="grow w-full"
-              value={fileMap[selectedFileData].rag_config["Chunker"].selected}
-              disabled={true}
-            />
-          </label>
-        </div>
-
-        <div className="flex gap-2 items-center text-text-verba">
-          <p className="flex min-w-[8vw]"></p>
-          <p className="text-sm text-text-alt-verba text-start">
-            {selectedFileData &&
-              fileMap[selectedFileData].rag_config["Chunker"].components[
-                fileMap[selectedFileData].rag_config["Chunker"].selected
-              ].description}
-          </p>
-        </div>
-
-        {/* Embedder */}
-        <div className="flex gap-2 justify-between items-center text-text-verba">
-          <p className="flex min-w-[8vw]">Embedder</p>
-          <label className="input flex items-center gap-2 w-full bg-bg-verba">
-            <input
-              type="text"
-              className="grow w-full"
-              value={fileMap[selectedFileData].rag_config["Embedder"].selected}
-              disabled={true}
-            />
-          </label>
-        </div>
-
-        <div className="flex gap-2 items-center text-text-verba">
-          <p className="flex min-w-[8vw]"></p>
-          <p className="text-sm text-text-alt-verba text-start">
-            {selectedFileData &&
-              fileMap[selectedFileData].rag_config["Embedder"].components[
-                fileMap[selectedFileData].rag_config["Embedder"].selected
-              ].description}
-          </p>
-        </div>
-
-        <div className="divider"></div>
-
-        <div className="flex gap-2 justify-between items-center text-text-verba">
-          <p className="flex min-w-[8vw]">Debug</p>
-          <VerbaButton
-            Icon={CgDebug}
-            onClick={openDebugModal}
-            className="max-w-min"
-          />
-        </div>
-
-        <dialog id={"File_Debug_Modal"} className="modal">
+          </div>
+          <dialog id={"File_Debug_Modal"} className="modal">
           <div className="modal-box min-w-fit">
             <h3 className="font-bold text-lg">Debugging File Configuration</h3>
             <pre className="whitespace-pre-wrap text-xs">
@@ -505,6 +499,8 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
             </div>
           </div>
         </dialog>
+        </div>
+        )}
       </div>
     );
   } else {

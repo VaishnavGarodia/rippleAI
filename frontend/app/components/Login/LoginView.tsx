@@ -186,7 +186,7 @@ const LoginView: React.FC<LoginViewProps> = ({
   return (
     <div className="w-screen h-screen bg-white flex justify-center items-center">
       <div className="w-4/5 md:w-1/3">
-        <h2 className="text-3xl font-light mb-4 text-center">Login to Verba</h2>
+        <h2 className="text-3xl font-light mb-4 text-center">Login to Ripple</h2>
         <form
           onSubmit={(e) => {
             e.preventDefault();

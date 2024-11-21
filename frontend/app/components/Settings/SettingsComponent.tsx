@@ -25,6 +25,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 
 import { updateThemeConfig } from "@/app/api";
+import { hasPermission } from "@/app/util";
 
 interface SettingsComponentProps {
   selectedTheme: Theme;
@@ -263,7 +264,9 @@ const SettingsComponent: React.FC<SettingsComponentProps> = ({
           ))}
         </select>
       </div>
-      <div className="flex-grow overflow-y-auto">
+      {(hasPermission(credentials.role, "SettingsCustomizeCustomer") && 
+        <div className="flex-grow overflow-y-auto">
+        
         <div className="gap-4 flex flex-col p-4">
           <p className="font-bold">Customize Logo</p>
           {Object.entries(selectedTheme)
@@ -291,6 +294,7 @@ const SettingsComponent: React.FC<SettingsComponentProps> = ({
             )}
         </div>
       </div>
+      )}
       <div className="flex justify-end gap-2 mt-3">
         <VerbaButton
           title="Save"

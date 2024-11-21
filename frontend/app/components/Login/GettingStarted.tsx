@@ -38,21 +38,22 @@ const GettingStartedComponent: React.FC<GettingStartedComponentProps> = ({
                 Ripple
               </h2>
               <p className="py-6 text-sm md:text-base">
-                Ripple allows you to search 
+                Ripple allows you to ask any question related to your project and searches instantly throught thousands of your construction specific documents
+                to instantly get you the answers.
               </p>
               <p className="py-6 text-sm md:text-base">
                 Learn more by visiting our website, ripple.ai. Schedule a demo to learn more,
                 and please reach out to us if you have any questions.
               </p>
               <div className="flex flex-col md:flex-row gap-2">
-                <VerbaButton
+                {/* <VerbaButton
                   title="GitHub"
                   Icon={FaGithub}
                   onClick={() =>
                     window.open("https://github.com/weaviate/verba", "_blank")
                   }
-                />
-                <VerbaButton
+                /> */}
+                {/* <VerbaButton
                   title="YouTube"
                   Icon={FaYoutube}
                   onClick={() =>
@@ -61,13 +62,13 @@ const GettingStartedComponent: React.FC<GettingStartedComponentProps> = ({
                       "_blank"
                     )
                   }
-                />
+                /> */}
                 <VerbaButton
-                  title="Blog Post"
+                  title="Learn more"
                   Icon={IoDocumentTextSharp}
                   onClick={() =>
                     window.open(
-                      "https://weaviate.io/blog/verba-open-source-rag-app",
+                      "https://ripple.ai",
                       "_blank"
                     )
                   }
@@ -75,12 +76,12 @@ const GettingStartedComponent: React.FC<GettingStartedComponentProps> = ({
               </div>
             </div>
             <div className="hidden md:block shrink-0">
-              <img
+              {/* <img
                 src="https://raw.githubusercontent.com/weaviate/Verba/main/img/thumbnail.png"
                 alt="Verba AI"
                 width={400}
                 className="rounded-lg shadow-2xl"
-              />
+              /> */}
             </div>
           </div>
         </div>

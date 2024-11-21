@@ -20,6 +20,7 @@ import VerbaButton from "../Navigation/VerbaButton";
 
 import BasicSettingView from "./BasicSettingView";
 import ComponentView from "./ComponentView";
+import { hasPermission } from "@/app/util";
 
 interface ConfigurationViewProps {
   selectedFileData: string | null;
@@ -207,8 +208,8 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
       <div className="bg-bg-alt-verba rounded-2xl flex gap-2 p-6 items-center justify-between h-min w-full">
         <div className="flex gap-2 justify-start ">
           <InfoComponent
-            tooltip_text="Configure all import settings related to chunking, embedding, adding meta data and more. You can save made changes individually or apply them to all other files"
-            display_text="Import Config"
+            tooltip_text="Add metadata and view information on the file being ingested."
+            display_text="Import Data Details"
           />
         </div>
         <div className="flex gap-3 justify-end">
@@ -221,8 +222,8 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
             }}
             Icon={IoSettingsSharp}
           />
-
-          <VerbaButton
+          {hasPermission(credentials.role, "ImportDataConfig") && (
+            <VerbaButton
             title="Config"
             selected={selectedSetting === "Pipeline"}
             selected_color="bg-secondary-verba"
@@ -231,7 +232,7 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
             }}
             Icon={FaHammer}
           />
-
+          )}
           <VerbaButton
             onClick={() => {
               setSelectedFileData(null);
@@ -257,6 +258,7 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 ? fileMap[selectedFileData].block ?? false
                 : undefined
             }
+            credentials={credentials}
           />
         )}
         {selectedSetting === "Pipeline" && selectedFileData && (
@@ -283,49 +285,53 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
         )}
       </div>
 
-      {/* Import Footer */}
-      <div className="bg-bg-alt-verba rounded-2xl flex gap-2 p-6 items-center justify-end h-min w-full">
-        <div className="flex gap-3 justify-end">
-          <VerbaButton
-            title="Apply to All"
-            onClick={openApplyAllModal}
-            Icon={VscSaveAll}
-          />
+      {/* TODO: Make sure that these options are not required to change trivial stuff, like title, metadata, etc and those are always used. */}
+      {hasPermission(credentials.role, "ImportDataConfig") && (
+        <div>
+          {/* Import Footer */}
+          <div className="bg-bg-alt-verba rounded-2xl flex gap-2 p-6 items-center justify-end h-min w-full">
+            <div className="flex gap-3 justify-end">
+              <VerbaButton
+                title="Apply to All"
+                onClick={openApplyAllModal}
+                Icon={VscSaveAll}
+              />
 
-          <VerbaButton
-            title="Save Config"
-            onClick={openDefaultModal}
-            Icon={IoSettingsSharp}
-          />
+              <VerbaButton
+                title="Save Config"
+                onClick={openDefaultModal}
+                Icon={IoSettingsSharp}
+              />
 
-          <VerbaButton title="Reset" onClick={openResetModal} Icon={MdCancel} />
-        </div>
+              <VerbaButton title="Reset" onClick={openResetModal} Icon={MdCancel} />
+            </div>
+          </div>
+          <UserModalComponent
+            modal_id={"apply_setting_to_all"}
+            title={"Apply Pipeline Settings"}
+            text={"Apply Pipeline Settings to all files?"}
+            triggerString="Apply"
+            triggerValue={null}
+            triggerAccept={applyToAll}
+          />
+          <UserModalComponent
+            modal_id={"reset_Setting"}
+            title={"Reset Setting"}
+            text={"Reset pipeline settings of this file?"}
+            triggerString="Reset"
+            triggerValue={null}
+            triggerAccept={resetConfig}
+          />
+          <UserModalComponent
+            modal_id={"set_default_settings"}
+            title={"Set Default"}
+            text={"Set current pipeline settings as default for future files?"}
+            triggerString="Set"
+            triggerValue={null}
+            triggerAccept={setAsDefault}
+          />
       </div>
-      <UserModalComponent
-        modal_id={"apply_setting_to_all"}
-        title={"Apply Pipeline Settings"}
-        text={"Apply Pipeline Settings to all files?"}
-        triggerString="Apply"
-        triggerValue={null}
-        triggerAccept={applyToAll}
-      />
-      <UserModalComponent
-        modal_id={"reset_Setting"}
-        title={"Reset Setting"}
-        text={"Reset pipeline settings of this file?"}
-        triggerString="Reset"
-        triggerValue={null}
-        triggerAccept={resetConfig}
-      />
-
-      <UserModalComponent
-        modal_id={"set_default_settings"}
-        title={"Set Default"}
-        text={"Set current pipeline settings as default for future files?"}
-        triggerString="Set"
-        triggerValue={null}
-        triggerAccept={setAsDefault}
-      />
+      )}
     </div>
   );
 };

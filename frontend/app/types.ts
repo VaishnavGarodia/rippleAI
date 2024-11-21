@@ -1,7 +1,10 @@
+export type Role = "BasicUser" | "BasicUploadUser" | "Admin" | "RippleAdmin";
+
 export type Credentials = {
   deployment: "Weaviate" | "Docker" | "Local" | "Custom";
   url: string;
   key: string;
+  role: Role;
 };
 
 export type DocumentFilter = {
@@ -238,7 +241,7 @@ export const statusTextMap = {
   CHUNKING: "Chunking...",
   LOADING: "Loading...",
   EMBEDDING: "Embedding...",
-  INGESTING: "Weaviating...",
+  INGESTING: "Ingesting...",
   NER: "Extracting NER...",
   EXTRACTION: "Extraction REL...",
   SUMMARIZING: "Summarizing...",
@@ -481,14 +484,14 @@ export interface Theme {
 
 export const LightTheme: Theme = {
   theme_name: "Light",
-  title: { text: "Verba", type: "text", description: "Title" },
+  title: { text: "Ripple", type: "text", description: "Title" },
   subtitle: {
-    text: "The Golden RAGtriever",
+    text: "AI for construction",
     type: "text",
     description: "Subtitle",
   },
   intro_message: {
-    text: "Welcome to Verba, your open-source RAG application!",
+    text: "", //TODO: see if we really need an intro message.
     type: "text",
     description: "First Message",
   },
@@ -555,11 +558,11 @@ export const LightTheme: Theme = {
 export const DarkTheme: Theme = {
   ...LightTheme,
   theme_name: "Dark",
-  title: { ...LightTheme.title, text: "Verba" },
-  subtitle: { ...LightTheme.subtitle, text: "The Dark RAGtriever" },
+  title: { ...LightTheme.title, text: "Ripple" },
+  subtitle: { ...LightTheme.subtitle, text: "Your construction AI" },
   intro_message: {
-    ...LightTheme.intro_message,
-    text: "Welcome to Verba, your open-source RAG application!",
+    ...LightTheme.intro_message, 
+    text: "", 
   },
   image: {
     ...LightTheme.image,
@@ -583,14 +586,15 @@ export const DarkTheme: Theme = {
   theme: "dark",
 };
 
+// TODO: See if we need this theme.
 export const WCDTheme: Theme = {
   ...LightTheme,
   theme_name: "WCD",
-  title: { ...LightTheme.title, text: "Verba" },
+  title: { ...LightTheme.title, text: "Ripple" },
   subtitle: { ...LightTheme.subtitle, text: "Weaviate Chatbot" },
   intro_message: {
     ...LightTheme.intro_message,
-    text: "Welcome to Verba, your open-source RAG application!",
+    text: "",
   },
   image: {
     ...LightTheme.image,
@@ -617,11 +621,11 @@ export const WCDTheme: Theme = {
 export const WeaviateTheme: Theme = {
   ...LightTheme,
   theme_name: "Weaviate",
-  title: { ...LightTheme.title, text: "Verba" },
+  title: { ...LightTheme.title, text: "Ripple" },
   subtitle: { ...LightTheme.subtitle, text: "Weaviate Chatbot" },
   intro_message: {
     ...LightTheme.intro_message,
-    text: "Welcome to Verba, your open-source RAG application!",
+    text: "",
   },
   image: {
     ...LightTheme.image,

@@ -18,7 +18,7 @@ import {
   fetchSuggestions,
   fetchLabels,
 } from "@/app/api";
-import { getWebSocketApiHost } from "@/app/util";
+import { getWebSocketApiHost, hasPermission } from "@/app/util";
 import {
   Credentials,
   QueryPayload,
@@ -403,7 +403,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             disabled={false}
             selected_color="bg-secondary-verba"
           />
-          {production != "Demo" && (
+          {hasPermission(credentials.role, "ChatConfig") && (
             <VerbaButton
               title="Config"
               Icon={FaHammer}

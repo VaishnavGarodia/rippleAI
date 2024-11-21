@@ -162,7 +162,7 @@ async def admin_panel(request: Request, authenticated: bool = Depends(authentica
 async def create_user(payload: CreateUserPayload, authenticated: bool = Depends(authenticate_admin)):
     try:
         user_created, message = manager.database_manager.add_user(
-            payload.email, payload.password, payload.weaviate_url, payload.weaviate_key
+            payload.email, payload.password, payload.weaviate_url, payload.weaviate_key, payload.role,
         )
         if user_created:
             return JSONResponse(content={"message": message}, status_code=200)
@@ -201,11 +201,13 @@ async def connect_to_verba(payload: ConnectPayload):
     try:
         print(payload)
         user_data = manager.database_manager.authenticate_user(payload.email, payload.password)
+        print(user_data)
         if not user_data:
             return JSONResponse(status_code=403, content={"error": "Invalid credentials"})
         credentials = Credentials(
             url=user_data["weaviate_url"], 
-            key=user_data["weaviate_key"]
+            key=user_data["weaviate_key"],
+            role=user_data["role"],
         )
         client = await client_manager.connect(credentials, 8080) # TODO: Remove port
         if isinstance(
