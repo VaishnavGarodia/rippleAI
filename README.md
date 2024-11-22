@@ -421,3 +421,4 @@ TODOs:
 - Based on the type of data being ingested, choose the appropriate option and settings to import the data (Unstructured, Assemly AI, etc.)
 - Create default settings for the embedder and for the generator.
 - Create admin page for the admin user. Should be able to see metrics on the admin page in settings. All the users, etc (maybe?). Atleast add an admin page for GOD user on /admin where you can see all users and edit their access, delete them, etc.
+- Role based access to certain documents.
