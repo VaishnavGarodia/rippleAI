@@ -60,6 +60,7 @@ export default function Home() {
     url: "",
     key: "",
     role: "BasicUser", //TODO: fix this and make sure we update here with what we ahve to
+    default_deployment: "",
   });
 
   // RAG Config
@@ -83,6 +84,7 @@ export default function Home() {
           url: health_data.deployments.WEAVIATE_URL_VERBA,
           key: health_data.deployments.WEAVIATE_API_KEY_VERBA,
           role: "BasicUser", // TODO: Fix this, add the role to health every where in the set
+          default_deployment: health_data.default_deployment,
         });
       } else {
         console.warn("Could not retrieve health data");
@@ -171,7 +173,6 @@ export default function Home() {
     message: string,
     type: "INFO" | "WARNING" | "SUCCESS" | "ERROR"
   ) => {
-    console.log("Adding status message:", message, type);
     setStatusMessages((prevMessages) => [
       ...prevMessages,
       { message, type, timestamp: new Date().toISOString() },

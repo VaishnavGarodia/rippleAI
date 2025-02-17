@@ -179,10 +179,11 @@ def get_models(url: str, api_key: str) -> List[str]:
         ]
         models.sort()
         models = filter_models(models)
+        if len(models) == 0:
+            return DEFAULT_MODEL_LIST
         return models
 
     except Exception as e:
-        msg.info(f"Couldn't connect to Groq ({url})")
         return DEFAULT_MODEL_LIST
 
 
