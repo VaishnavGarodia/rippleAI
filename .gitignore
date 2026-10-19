@@ -22,3 +22,6 @@ cache.txt
 *_secrets.json
 ollama
 data/
+# Local user database (contains credentials)
+verba_users.db
+*.db
